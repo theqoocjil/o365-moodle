@@ -326,24 +326,32 @@ class auth_plugin_oidc extends \auth_plugin_base {
                 }
             }
 
+            if (!empty($user->loginascontext)){
+                $redirect = false;
+            }
+
             if ($redirect) {
                 $logouturl = get_config('auth_oidc', 'logouturi');
-                if (!$logouturl) {
-                    $logouturl = 'https://login.microsoftonline.com/organizations/oauth2/logout?post_logout_redirect_uri=' .
-                        urlencode($CFG->wwwroot);
-                } else {
-                    if (
-                        preg_match("/^https:\/\/login.microsoftonline.com\//", $logouturl) &&
-                        preg_match("/\/oauth2\/logout$/", $logouturl)
-                    ) {
-                        $logouturl .= '?post_logout_redirect_uri=' . urlencode($CFG->wwwroot);
-                    }
-                }
+                $idptype = get_config('auth_oidc', 'idptype');
 
+                $token = $DB->get_record('auth_oidc_token', ['userid' => $user->id]);
+                $params = [
+                    'post_logout_redirect_uri'=>$CFG->wwwroot,
+                ];
+
+                switch ($idptype) {
+                    case '1':
+                    case '2':
+                        $logouturl .= '?' . http_build_query($params);
+                        break;
+                    case '3':
+                        $params['id_token_hint'] = $token->idtoken;
+                        $logouturl .= '?' . http_build_query($params);
+                        break;
+                }
                 redirect($logouturl);
             }
         }
-
         return true;
     }
 }
