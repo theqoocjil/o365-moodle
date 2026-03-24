@@ -330,8 +330,9 @@ class auth_plugin_oidc extends \auth_plugin_base {
                 $redirect = false;
             }
 
-            if ($redirect) {
-                $logouturl = get_config('auth_oidc', 'logouturi');
+            $logouturl = get_config('auth_oidc', 'logouturi');
+
+            if ($redirect && $logouturl) {
                 $idptype = get_config('auth_oidc', 'idptype');
 
                 $token = $DB->get_record('auth_oidc_token', ['userid' => $user->id]);
