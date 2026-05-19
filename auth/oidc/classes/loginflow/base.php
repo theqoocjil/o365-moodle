@@ -685,6 +685,9 @@ class base {
             }
         }
 
+        // Cleanup old token with the same userid.
+        $DB->delete_records('auth_oidc_token', ['userid' => $userid]);
+
         $tokenrec = new stdClass();
         $tokenrec->oidcuniqid = $oidcuniqid;
         $tokenrec->username = $username;
